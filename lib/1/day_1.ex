@@ -1,22 +1,41 @@
 defmodule AOC.Day1 do
   @input_file "./data/day_1_input"
   def read_input() do
-    File.read!(@input_file)
-    |> String.trim()
-    |> String.split("\n")
-    |> Enum.map(&String.to_integer(&1))
+    @input_file
+    |> File.stream!()
+    |> Stream.map(fn line ->
+      line
+      |> String.trim()
+      |> String.to_integer()
+    end)
+    |> Enum.to_list()
   end
 
-  def process do
+  def part1 do
     input = read_input()
 
     input
-    |> Enum.map(fn num ->
-      Enum.filter(input, &(&1 + num == 2020))
+    |> Enum.reduce_while(nil, fn entry, _acc ->
+      n_to_find = 2020 - entry
+
+      case Enum.find(input, fn x -> x == n_to_find end) do
+        nil -> {:cont, nil}
+        x -> {:halt, entry * x}
+      end
     end)
-    |> List.flatten()
-    |> solve
   end
 
-  def solve([a, b]), do: a * b
+  def part2() do
+    input = read_input()
+
+    try do
+      for a <- input,
+          b <- input,
+          c <- input,
+          a + b + c == 2020,
+          do: throw({:break, {a, b, c}})
+    catch
+      {:break, {a, b, c}} -> a * b * c
+    end
+  end
 end
