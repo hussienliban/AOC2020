@@ -3,9 +3,10 @@ defmodule AOC.Day2 do
   def read_input() do
     @input_file
     |> File.stream!()
-    |> Stream.map(fn line ->
-      line
-      |> String.trim()
+    |> Stream.map(&String.trim/1)
+    |> Stream.map(&String.split(&1, ~r/[-: ]/, trim: true))
+    |> Stream.map(fn [min, max, char, pwd] ->
+      {String.to_integer(min), String.to_integer(max), char, pwd}
     end)
     |> Enum.to_list()
   end
@@ -14,26 +15,35 @@ defmodule AOC.Day2 do
     input = read_input()
 
     input
-    |> Enum.map(fn line ->
-      [min, max, char, pwd] =
-        line
-        |> String.split(~r{:|-|\s}, parts: 4)
-        |> Enum.map(&String.trim/1)
-
-      length_in_pwd =
-        pwd
-        |> String.graphemes()
-        |> Enum.group_by(&String.first/1)
-        |> Map.get(char, [])
-        |> length()
-
-      [String.to_integer(min), String.to_integer(max), length_in_pwd]
+    |> Enum.filter(fn {min, max, char, pwd} ->
+      pwd
+      |> String.graphemes()
+      |> Enum.count(&(&1 == char))
+      |> Kernel.in(min..max)
     end)
-    |> Enum.filter(&check_pwd/1)
     |> length
   end
 
-  defp check_pwd([min, max, number]) when number >= min and number <= max, do: true
+  def part2 do
+    input = read_input()
 
-  defp check_pwd(_), do: false
+    input
+    |> Enum.filter(fn {pos1, pos2, char, pwd} ->
+      case [in_position(pwd, char, pos1), in_position(pwd, char, pos2)] do
+        [false, true] ->
+          true
+
+        [true, false] ->
+          true
+
+        _ ->
+          false
+      end
+    end)
+    |> length
+  end
+
+  defp in_position(pwd, char, pos) when is_integer(pos) do
+    String.match?(pwd, ~r/^.{#{pos - 1}}[#{char}]/)
+  end
 end
