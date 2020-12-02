@@ -35,7 +35,7 @@ defmodule AOC.Day1 do
           a + b + c == 2020,
           do: throw({:break, {a, b, c}})
     catch
-      {:break, {a, b, c}} -> a * b * c
+      {:break, {a, b, c}} -> {[a, b, c], a * b * c}
     end
   end
 end
