@@ -18,27 +18,25 @@ defmodule AOC.Day3 do
 
   def part1 do
     input = read_input()
-    len = input |> hd |> String.length()
-
-    trees_count(input, len, @steps |> hd)
+    trees_count(input, @steps |> hd)
   end
 
   def part2 do
     input = read_input()
-    len = input |> hd |> String.length()
 
     Enum.reduce(@steps, 1, fn step, acc ->
-      acc * trees_count(input, len, step)
+      acc * trees_count(input, step)
     end)
   end
 
-  defp trees_count(input, len, [x, y]) do
+  defp trees_count(input, [x, y]) do
+    len = input |> hd |> String.length()
+
     input
+    |> Enum.map(&String.split(&1, "", trim: true))
     |> Enum.with_index(0)
     |> Enum.reduce_while(%{x: 0, y: 0, trees: 0}, fn {line, idx}, state ->
-      geo = String.split(line, "", trim: true)
-
-      char = Enum.at(geo, rem(state.x, len))
+      char = Enum.at(line, rem(state.x, len))
 
       cond do
         rem(idx, y) != 0 ->
@@ -47,17 +45,17 @@ defmodule AOC.Day3 do
         char == "#" ->
           state =
             state
-            |> Map.update(:x, x, fn value -> value + x end)
-            |> Map.update(:y, y, fn value -> value + y end)
-            |> Map.update(:trees, 0, fn value -> value + 1 end)
+            |> Map.update(:x, x, &(&1 + x))
+            |> Map.update(:y, y, &(&1 + y))
+            |> Map.update(:trees, 0, &(&1 + 1))
 
           {:cont, state}
 
         char == "." ->
           state =
             state
-            |> Map.update(:x, x, fn value -> value + x end)
-            |> Map.update(:y, y, fn value -> value + y end)
+            |> Map.update(:x, x, &(&1 + x))
+            |> Map.update(:y, y, &(&1 + y))
 
           {:cont, state}
       end
